@@ -1,0 +1,90 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+repositories { 
+    jcenter()
+    mavenLocal()
+    mavenCentral()
+}
+
+ext.junit4Version        = '4.12'
+ext.junitVintageVersion  = '4.12.1'
+ext.junitPlatformVersion = '1.5.2'
+ext.junitJupiterVersion  = '5.5.2'
+ext.log4jVersion         = '2.9.0'
+
+apply plugin: 'java'
+apply plugin: 'application'
+
+compileTestJava {
+   sourceCompatibility = 13
+   targetCompatibility = 13
+   options.compilerArgs += ['-parameters', '-g']
+}
+
+// gradle support from JUnit5 team that we removed after gradle native support for JUnit5: http://junit.org/junit5/docs/current/user-guide/#running-tests-build-gradle
+test {
+    // https://docs.gradle.org/current/dsl/org.gradle.api.tasks.testing.Test.html
+    // Enable JUnit 5 (Gradle 4.6+).
+    useJUnitPlatform {
+            includeEngines 'junit-jupiter', 'junit-vintage'
+            // excludeEngines 'custom-engine'
+
+            // includeTags 'fast'
+            // excludeTags 'slow'
+    }
+
+    // Always run tests, even when nothing changed.
+    dependsOn 'cleanTest'
+}
+
+dependencies {
+    testImplementation "org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${junitJupiterVersion}"
+    testCompileOnly "junit:junit:${junit4Version}"
+    testRuntimeOnly "org.junit.vintage:junit-vintage-engine:${junitJupiterVersion}"
+
+    // Enable use of the JUnitPlatform Runner within the IDE
+	//testCompile("org.junit.platform:junit-platform-runner:${junitPlatformVersion}")
+    // Only needed to run tests in an (IntelliJ) IDE(A) that bundles an older version
+	//testRuntimeOnly("org.junit.platform:junit-platform-launcher:${junitPlatformVersion}")
+    
+	// To avoid compiler warnings about @API annotations in JUnit code
+	testCompileOnly('org.apiguardian:apiguardian-api:1.0.0')
+    implementation('org.apiguardian:apiguardian-api:1.0.0')
+
+    // To use Log4J's LogManager
+	testRuntimeOnly("org.apache.logging.log4j:log4j-core:${log4jVersion}")
+	testRuntimeOnly("org.apache.logging.log4j:log4j-jul:${log4jVersion}")
+
+    implementation("org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}")
+    implementation "junit:junit:${junit4Version}"
+}
+
+mainClassName = ' '
+
+/*
+Default:
+src/main/java
+src/main/resources
+src/test/java
+src/test/resources
+*/
+sourceSets {
+   main {
+      java {
+         srcDirs = ['src']
+      }
+   }
+   test {
+       java {
+           srcDirs = ['src']
+      }
+   }
+}
